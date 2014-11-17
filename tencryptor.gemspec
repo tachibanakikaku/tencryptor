@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.version       = Tencryptor::VERSION
   s.authors       = ['mryoshio']
   s.email         = ['yoshiokaas@tachibanakikaku.com']
-  s.summary       = %q{TODO: Write a short summary. Required.}
-  s.description   = %q{TODO: Write a longer description. Optional.}
+  s.summary       = %q{Tencryptor gem.}
+  s.description   = %q{Gem for Tencryptor.}
   s.homepage      = ''
   s.license       = 'GPLv3'
 
