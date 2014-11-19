@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.description   = %q{Gem for Tencryptor.}
   s.homepage      = ''
   s.license       = 'GPLv3'
-
   s.files         = `git ls-files -z`.split("\x0")
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
