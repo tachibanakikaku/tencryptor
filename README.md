@@ -1,26 +1,39 @@
 # Tencryptor
 
-TODO: Write a gem description
+Encryption module.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'tencryptor'
+gem 'tencryptor', git: 'https://github.com/tachibanakikaku/tencryptor.git'
 ```
 
 And then execute:
 
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install tencryptor
+```bash
+$ bundle
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+Execute encryption like this:
+
+```ruby
+Tencryptor.configure do |config|
+  config.algorithm         = 'sha256'
+  config.service           = 'my-service'
+  config.headers           = ['host']
+  config.region            = 'asia/tokyo'
+  config.access_key        = 'my-access-key'
+  config.secret_access_key = 'my-secret_access-key'
+  config.debug             = true
+end
+
+t = Tencryptor::Encrypter.new
+p t.signature(URI('https://github.com/'))
+```
 
 ## Contributing
 
