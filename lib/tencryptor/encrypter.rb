@@ -4,12 +4,12 @@ require 'uri'
 module Tencryptor
   class Encrypter
     def initialize
-      encrypter = "#{Tencryptor.configuration.algorithm.upcase}Encrypter"
+      encrypter = "#{Tencryptor.config.algorithm.upcase}Encrypter"
       @encrypter = Tencryptor.const_get(encrypter).new
     end
 
-    def signature(uri, method = 'get')
-      @encrypter.signature(uri, method)
+    def signed_parameters(uri, method = 'get')
+      @encrypter.signed_parameters(uri, method)
     end
   end
 end

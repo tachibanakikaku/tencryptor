@@ -1,15 +1,41 @@
 module Tencryptor
   class SHA256Encrypter
+    # Get query parameters including signed information
+    #
+    # @param uri [URI]
+    # @param method [String] HTTP verb
+    # @return [Hash] signed query parameters
+    def signed_parameters(uri, method = get)
+      @enc_time = Time.now
+
+      params =
+        uri.query.nil? ? {} : Hash[URI::decode_www_form(uri.query)]
+      params['X-Tkk-Algorithm'] = Tencryptor.config.version
+      params['X-Tkk-Credential'] =
+        "#{Tencryptor.config.access_key}/" \
+        "#{@enc_time.getutc.strftime('%Y%m%d')}/" \
+        "#{Tencryptor.config.region}/" \
+        "#{Tencryptor.config.service}/" \
+        "tkk4_request"
+      params['X-Tkk-Date'] =  @enc_time.iso8601
+      params['X-Tkk-Expires'] = 86400
+      params['X-Tkk-SignedHeaders'] = Tencryptor.config.headers.join(';')
+      params['X-Tkk-Signature'] = signature(uri, method, params)
+
+      params
+    end
+
+    private
+
     # Encrypt request with elements.
     #
     # @param uri    [URI]
-    # @param method [String]
-    # @return signature [String] calculated signature
-    def signature(uri, method)
-      return nil unless uri
-
-      req = cannonical_request(uri, method)
-      digest = ::OpenSSL::Digest.new(Tencryptor.configuration.algorithm)
+    # @param method [String] HTTP verb
+    # @param params [Hash] signed parameters
+    # @return [String] calculated signature
+    def signature(uri, method = get, params = {})
+      req = cannonical_request(uri, method, params)
+      digest = ::OpenSSL::Digest.new(Tencryptor.config.algorithm)
 
       OpenSSL::HMAC.hexdigest(
         digest,
@@ -18,63 +44,55 @@ module Tencryptor
       )
     end
 
-    private
-
     # Get cannonical request with request info.
     #
     # @param uri [URI]
-    # @param methodh [String]
-    # @return cannnonical request [String]
-    def cannonical_request(uri, method)
+    # @param method [String]
+    # @param params [Hash] signed parameters
+    # @return [String] cannnonical request
+    def cannonical_request(uri, method, params)
       el = []
       el <<  method
       el << URI.encode_www_form_component(uri.path)
-      x_headers = {}
-      x_headers['X-Tkk-Algorithm'] = Tencryptor.configuration.version
-      x_headers['X-Tkk-Credential'] =
-        "#{Tencryptor.configuration.access_key}/#{Time.now.getutc.strftime('%Y%m%d')}" \
-        "#{Tencryptor.configuration.region}/tkk4_request"
-      x_headers['X-Tkk-Date'] = Time.now.getutc.iso8601
-      x_headers['X-Tkk-Expires'] = 86400
-      x_headers['X-Tkk-SignedHeaders'] = Tencryptor.configuration.headers.join(',')
-      el << URI.encode_www_form(x_headers)
-      el << "host: #{uri.host}" # TODO: variant
+      el << URI.encode_www_form(Hash[params.sort])
+      el << "host: #{uri.host}" # TODO: make variant
       el << ''
-      el << 'host'
+      el << Tencryptor.config.headers.map { |m| m.downcase } .join(';')
       el << 'UNSIGNED-PAYLOAD'
 
-      el.join("\n")
-
-      Tencryptor.debug(el.join("\n")) if Tencryptor.configuration.debug
-
-      el.join("\n")
-    end
-
-    def string_to_sign(req)
-      el = [Tencryptor.configuration.version]
-      el << Time.now.getutc.iso8601
-      el << "#{Time.now.getutc.strftime('%Y%m%d')}/#{Tencryptor.configuration.region}/#{Tencryptor.configuration.service}/tkk4_request"
-      el << ::OpenSSL::Digest::SHA256.new.hexdigest(req)
-
-      Tencryptor.debug(el.join("\n")) if Tencryptor.configuration.debug
-
-      el.join("\n")
+      req = el.join("\n")
+      Tencryptor.debug(req) if Tencryptor.config.debug
+      req
     end
 
     def signing_key
-      dig = OpenSSL::Digest.new(Tencryptor.configuration.algorithm)
+      dig = OpenSSL::Digest.new(Tencryptor.config.algorithm)
       d = OpenSSL::HMAC.digest(
         dig,
-        "TKK4#{Tencryptor.configuration.secret_access_key}",
-        Time.now.getutc.strftime('%Y%m%d')
+        "TKK4#{Tencryptor.config.secret_access_key}",
+        @enc_time.getutc.strftime('%Y%m%d')
       )
-      d = OpenSSL::HMAC.digest(dig, d, Tencryptor.configuration.region)
-      d = OpenSSL::HMAC.digest(dig, d, Tencryptor.configuration.service)
+      d = OpenSSL::HMAC.digest(dig, d, Tencryptor.config.region)
+      d = OpenSSL::HMAC.digest(dig, d, Tencryptor.config.service)
 
-      Tencryptor.debug(OpenSSL::HMAC.digest(dig, d, 'tkk4_request')) \
-        if Tencryptor.configuration.debug
+      s_key = OpenSSL::HMAC.digest(dig, d, 'tkk4_request')
+      Tencryptor.debug(s_key) if Tencryptor.config.debug
+      s_key
+    end
 
-      OpenSSL::HMAC.digest(dig, d, 'tkk4_request')
+    def string_to_sign(req)
+      el = [Tencryptor.config.version]
+      el << @enc_time.getutc.iso8601
+      scope = "#{@enc_time.getutc.strftime('%Y%m%d')}/" \
+        "#{Tencryptor.config.region}/" \
+        "#{Tencryptor.config.service}/" \
+        "tkk4_request"
+      el << scope
+      el << ::OpenSSL::Digest::SHA256.new.hexdigest(req)
+
+      s_to_s = el.join("\n")
+      Tencryptor.debug(s_to_s) if Tencryptor.config.debug
+      s_to_s
     end
   end
 end
