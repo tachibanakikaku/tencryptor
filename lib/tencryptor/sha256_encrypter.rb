@@ -5,7 +5,7 @@ module Tencryptor
     # @param uri [URI]
     # @param method [String] HTTP verb
     # @return [Hash] signed query parameters
-    def signed_parameters(uri, method = get)
+    def signed_parameters(uri, method)
       @enc_time = Time.now
 
       params =
