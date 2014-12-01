@@ -18,7 +18,7 @@ $ bundle
 
 ## Usage
 
-Execute encryption like this:
+Generate signed parameters (including signature) like this:
 
 ```ruby
 Tencryptor.configure do |config|
@@ -32,7 +32,8 @@ Tencryptor.configure do |config|
 end
 
 t = Tencryptor::Encrypter.new
-p t.signature(URI('https://github.com/'))
+t.signed_parameters(URI('https://github.com/?b=xxx&a=YYY&C=mmm'))
+#=> {"b"=>"xxx", "a"=>"YYY", "C"=>"mmm", "X-Tkk-Algorithm"=>"TKK4-HMAC-SHA256", "X-Tkk-Credential"=>"my-access-key/20141126/asia/tokyo/my-service/tkk4_request", "X-Tkk-Date"=>"2014-11-27T02:22:10+09:00", "X-Tkk-Expires"=>86400, "X-Tkk-SignedHeaders"=>"host", "X-Tkk-Signature"=>"e6f8c0f17f534bf3957d3d1224ef63776920b8194279ad4110aedcf54ff164d7"}
 ```
 
 ## Contributing

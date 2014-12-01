@@ -6,7 +6,7 @@ require_relative 'tencryptor/sha256_encrypter'
 
 module Tencryptor
   class << self
-    attr_accessor :configuration, :logger
+    attr_accessor :config, :logger
   end
 
   def self.debug(data)
@@ -15,8 +15,9 @@ module Tencryptor
   end
 
   def self.configure
-    self.configuration ||= Configuration.new
-    yield configuration
+    self.config ||= Configuration.new
+    yield config
+    self.config.version = "TKK4-HMAC-#{self.config.algorithm.upcase}"
   end
 
   class Configuration
