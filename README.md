@@ -1,5 +1,7 @@
 # Tencryptor
 
+[![Build Status](https://travis-ci.org/tachibanakikaku/tencryptor.svg)](https://travis-ci.org/tachibanakikaku/tencryptor)
+
 Encryption module.
 
 ## Installation

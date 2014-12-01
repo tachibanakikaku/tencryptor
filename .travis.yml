@@ -1,0 +1,11 @@
+language: ruby
+rvm:
+- 1.9.3
+- 2.0.0
+- 2.1.1
+bundler_args: '--without production'
+sudo: false
+script: bundle exec rake spec
+notifications:
+  slack:
+    secure: NI7ZfJ5Cs8mSLYuMTTGvPdzQ2h/YyVU7BUSHzbfev8WDlPhIMHxlqA76Q4s4JEvsszsSDJqSoBL4ASKfMufBYD7zj39YpdyLVfqU5DHsHmCDBveUFhzBqonc9QBkShyqZK6Gk7L5PwSMAx94PIp4wAUuBiDShMGuiWZALIUfbuc=
